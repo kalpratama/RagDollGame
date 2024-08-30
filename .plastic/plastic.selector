@@ -1,0 +1,4 @@
+repository "RagedDoll@justraxp@cloud"
+  path "/"
+    br "/main"
+    co "/main"
