@@ -43,7 +43,13 @@ public class CharacterMovement : MonoBehaviour
             // Rotate the character towards the move direction
             RotateTowards(moveDirection);
         }
+        else
+        {
+            // Stop applying torque when no movement input is detected
+            hips.angularVelocity = Vector3.zero;
+        }
     }
+
 
     void RotateTowards(Vector3 targetDirection)
     {
