@@ -5,39 +5,52 @@ using UnityEngine;
 public class CharacterMovement : MonoBehaviour
 {
     public float moveSpeed = 5f;
-    public Transform cameraTransform; // Reference to the camera's transform
+    public float rotationSpeed = 10f;
+    public Rigidbody hips; // Assign the hips Rigidbody of the ragdoll in the inspector
 
-    private Rigidbody rb;
+    private Vector3 moveDirection;
+    private Camera mainCamera;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        mainCamera = Camera.main;
     }
 
     void Update()
     {
-        MoveCharacter();
-    }
+        hips.AddTorque(Vector3.up * 100f, ForceMode.VelocityChange);
 
-    void MoveCharacter()
-    {
+        // Get input for movement
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
-        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+        // Calculate the move direction relative to the camera
+        Vector3 forward = mainCamera.transform.forward;
+        Vector3 right = mainCamera.transform.right;
 
-        if (direction.magnitude >= 0.1f)
+        forward.y = 0f; // Keep the direction parallel to the ground
+        right.y = 0f; // Keep the direction parallel to the ground
+
+        forward.Normalize();
+        right.Normalize();
+
+        moveDirection = (forward * vertical + right * horizontal).normalized;
+
+        // Apply movement and rotation
+        if (moveDirection != Vector3.zero)
         {
-            // Calculate the angle to rotate the character towards
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cameraTransform.eulerAngles.y;
-            Quaternion rotation = Quaternion.Euler(0f, targetAngle, 0f);
+            // Move the character's hips in the move direction
+            hips.MovePosition(hips.position + moveDirection * moveSpeed * Time.deltaTime);
 
-            // Rotate the character
-            transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 10f);
-
-            // Move the character
-            Vector3 moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            rb.MovePosition(transform.position + moveDirection * moveSpeed * Time.deltaTime);
+            // Rotate the character towards the move direction
+            RotateTowards(moveDirection);
         }
+    }
+
+    void RotateTowards(Vector3 targetDirection)
+    {
+        // Calculate the torque required to rotate towards the target direction
+        Vector3 torqueDirection = Vector3.Cross(transform.forward, targetDirection);
+        hips.AddTorque(torqueDirection * rotationSpeed, ForceMode.VelocityChange);
     }
 }
