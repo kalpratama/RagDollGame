@@ -18,8 +18,6 @@ public class CharacterMovement : MonoBehaviour
 
     void Update()
     {
-        hips.AddTorque(Vector3.up * 100f, ForceMode.VelocityChange);
-
         // Get input for movement
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
